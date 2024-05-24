@@ -7,10 +7,18 @@ const clearButton = document.querySelector(".clear");
 const equalButton = document.querySelector(".equal");
 const backButton = document.querySelector(".back");
 const floatButton = document.querySelector(".float");
+
+const operators = /[+\-*\/]/;
 // Regex for operation
-const REGEX = /^(\d+)([+\-*/])(\d+)$/;
+// const REGEX = /^(\d+)([+\-*/])(\d+)$/;
+
+//New regex for floating points
+const REGEX = /(-?\d+(\.\d+)?)\s*([-+*/])\s*(-?\d+(\.\d+)?)/;
 //Regex for double operands
 var REGEX2 = /^[^+\-*/]*(?:[+\-*/][^+\-*/]*)?[+\-*/][^+\-*/]*$/;
+
+//regex float
+const REGEX3 = /^[-+]?\d*\.?\d+([-+*/][-+]?\d*\.?\d+)?$/;
 
 function add(num1, num2) {
   return num1 + num2;
@@ -71,6 +79,17 @@ itemButtons.forEach((item) => {
         console.log("number pressed");
         resultDisplay.textContent = "";
       } else {
+        //if an opperand is pressed when result text is wrong
+        // delete result text and prevent user from adding operand
+        if (
+          (resultDisplay.textContent === "WRONG OPERATION" ||
+            resultDisplay.textContent === "REALLY?") &&
+          e.target.className === "item operand"
+        ) {
+          resultDisplay.textContent = "";
+          e.preventDefault();
+          return false;
+        }
         console.log("operand pressed");
         inputDisplay.textContent =
           resultDisplay.textContent + inputDisplay.textContent;
@@ -89,14 +108,22 @@ itemButtons.forEach((item) => {
     }
 
     // if (
+    //   e.target.className === ".float" &&
+    //   inputDisplay.textContent.match(REGEX3)
+    // ) {
+    //   e.preventDefault();
+    //   return false;
+    // }
+    // if (
     //   e.target.className === "item operand" &&
     //   resultDisplay.textContent === "WRONG OPERATION"
     // ) {
     //   console.log("swderfgwe");
     // }
-
-    console.log(e.target.textContent);
-    inputDisplay.textContent += e.target.textContent;
+    else {
+      console.log(e.target.textContent);
+      inputDisplay.textContent += e.target.textContent;
+    }
   });
 });
 
@@ -105,15 +132,27 @@ function parseInput(text) {
   console.log(text);
   //regular expression to identify operator
 
-  const match = text.match(REGEX);
-  // match[1] = number1, match[2] = operator, match[3] = number2
-  if (match) {
-    return match;
+  // const match = text.match(REGEX);
+  // // match[1] = number1, match[2] = operator, match[3] = number2
+  let result = text.split(operators).filter(Boolean);
+
+  const operator = text.match(operators)[0];
+  result.push(operator);
+  // console.log(result);
+
+  if (operator) {
+    return result;
   } else {
     return "Invalid format";
   }
 }
-
+// Handler for keyboard enter button pressed
+inputDisplay.addEventListener("keydown", (e) => {
+  if (e.keyCode === 13) {
+    e.preventDefault();
+    equalButton.click();
+  }
+});
 // clear button
 clearButton.addEventListener("click", (e) => {
   resultDisplay.textContent = "";
@@ -123,10 +162,10 @@ clearButton.addEventListener("click", (e) => {
 //equal button
 equalButton.addEventListener("click", (e) => {
   const operation = parseInput(inputDisplay.textContent);
-  console.log(operation[2]);
+  console.log(operation);
   const result = operate(
-    parseInt(operation[1]),
-    parseInt(operation[3]),
+    parseFloat(operation[0]),
+    parseFloat(operation[1]),
     operation[2]
   );
   // if result is good
@@ -150,6 +189,6 @@ backButton.addEventListener("click", (e) => {
 });
 
 //float button
-floatButton.addEventListener("click", (e) => {
-  inputDisplay.textContent += ".";
-});
+// floatButton.addEventListener("click", (e) => {
+//   inputDisplay.textContent += ".";
+// });
